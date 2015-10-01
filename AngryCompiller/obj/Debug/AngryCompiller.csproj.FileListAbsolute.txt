@@ -1,0 +1,11 @@
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\bin\Debug\AngryCompiller.exe.config
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\bin\Debug\AngryCompiller.exe
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\bin\Debug\AngryCompiller.pdb
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\obj\Debug\AngryCompiller.csprojResolveAssemblyReference.cache
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\obj\Debug\AngryCompiller.Properties.Resources.resources
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\obj\Debug\AngryCompiller.csproj.GenerateResource.Cache
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\obj\Debug\AngryCompiller.exe
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\obj\Debug\AngryCompiller.pdb
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\obj\Debug\AngryCompiller.AngryCompillerDlg.resources
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\obj\Debug\AngryCompiller.AboutEvil.resources
+c:\users\iicux\documents\visual studio 2013\Projects\AngryCompiller\AngryCompiller\obj\Debug\AngryCompiller.g.resources
