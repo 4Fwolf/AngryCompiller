@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AngryCompillerDlg));
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
             "",
             "<File>"}, -1);
             this.CodeEdit = new System.Windows.Forms.TextBox();
@@ -44,6 +44,7 @@
             this.AboutCmpl = new System.Windows.Forms.ToolStripButton();
             this.StatusStrp = new System.Windows.Forms.StatusStrip();
             this.StatusInfo = new System.Windows.Forms.ToolStripStatusLabel();
+            this.LineStat = new System.Windows.Forms.ToolStripStatusLabel();
             this.ListFiles = new System.Windows.Forms.ListView();
             this.column1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.column2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -61,6 +62,10 @@
             this.CodeEdit.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.CodeEdit.Size = new System.Drawing.Size(465, 251);
             this.CodeEdit.TabIndex = 0;
+            this.CodeEdit.TextChanged += new System.EventHandler(this.CodeEdit_TextChanged);
+            this.CodeEdit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CodeEdit_KeyDown);
+            this.CodeEdit.KeyUp += new System.Windows.Forms.KeyEventHandler(this.CodeEdit_KeyUp);
+            this.CodeEdit.MouseCaptureChanged += new System.EventHandler(this.CodeEdit_MouseCaptureChanged);
             // 
             // ToolStrp
             // 
@@ -167,7 +172,8 @@
             // StatusStrp
             // 
             this.StatusStrp.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.StatusInfo});
+            this.StatusInfo,
+            this.LineStat});
             this.StatusStrp.Location = new System.Drawing.Point(0, 387);
             this.StatusStrp.Name = "StatusStrp";
             this.StatusStrp.Size = new System.Drawing.Size(688, 22);
@@ -180,6 +186,17 @@
             this.StatusInfo.Size = new System.Drawing.Size(39, 17);
             this.StatusInfo.Text = "Status";
             // 
+            // LineStat
+            // 
+            this.LineStat.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.LineStat.Margin = new System.Windows.Forms.Padding(500, 3, 0, 2);
+            this.LineStat.MergeAction = System.Windows.Forms.MergeAction.Replace;
+            this.LineStat.Name = "LineStat";
+            this.LineStat.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
+            this.LineStat.Size = new System.Drawing.Size(41, 17);
+            this.LineStat.Text = "Line: 0";
+            this.LineStat.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // ListFiles
             // 
             this.ListFiles.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -187,7 +204,7 @@
             this.column2});
             this.ListFiles.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.ListFiles.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1});
+            listViewItem4});
             this.ListFiles.Location = new System.Drawing.Point(12, 28);
             this.ListFiles.MultiSelect = false;
             this.ListFiles.Name = "ListFiles";
@@ -230,9 +247,11 @@
             this.Controls.Add(this.CodeEdit);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.MaximizeBox = false;
             this.Name = "AngryCompillerDlg";
             this.Text = "AngryCompiller";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.AngryCompillerDlg_KeyDown);
             this.ToolStrp.ResumeLayout(false);
             this.ToolStrp.PerformLayout();
             this.StatusStrp.ResumeLayout(false);
@@ -261,6 +280,7 @@
         private System.Windows.Forms.ColumnHeader column1;
         private System.Windows.Forms.ColumnHeader column2;
         private System.Windows.Forms.TextBox LogList;
+        private System.Windows.Forms.ToolStripStatusLabel LineStat;
     }
 }
 

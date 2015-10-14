@@ -1,0 +1,35 @@
+name <TestProgram>;
+body data
+
+integer _Dig;
+integer _Dig1;
+
+read _Dig;
+read _Dig1;
+
+_Dig -> _Dig;
+
+if (_Dig == _Dig1)
+{
+_Dig1 -> _Dig add 1;
+}
+else
+{
+_Dig1 -> _Dig sub 1;
+}
+
+write _Dig;
+write _Dig1;
+
+\\ *
+\\ /
+\\ %
+\\ !=
+\\ le
+\\ ge
+\\ !
+\\ &
+\\ |
+\\ comment
+
+end
