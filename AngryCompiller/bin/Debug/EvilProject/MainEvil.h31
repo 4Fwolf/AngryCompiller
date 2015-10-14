@@ -7,7 +7,7 @@ integer _Dig1;
 read _Dig;
 read _Dig1;
 
-_Dig -> _Dig;
+_Dig -> _Dig1 add _Dig;
 
 if (_Dig == _Dig1)
 {
