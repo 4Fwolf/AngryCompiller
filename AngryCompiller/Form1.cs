@@ -21,6 +21,7 @@ namespace AngryCompiller
 
         String fl;
         StreamWriter log;
+        String name_file = "";
         #region tools
         private void AboutCmpl_Click(object sender, EventArgs e)
         {
@@ -36,8 +37,10 @@ namespace AngryCompiller
 
         private void RunPrj_Click(object sender, EventArgs e)
         {
-            //ProcessStartInfo psiOpt = new ProcessStartInfo(@"cmd.exe");
-            //Process procCommand = Process.Start(psiOpt);
+            ProcessStartInfo psiOpt = new ProcessStartInfo(Directory.GetCurrentDirectory() + "\\EvilProject\\" + name_file.Substring(0, name_file.IndexOf(".")) + ".exe");
+            psiOpt.WorkingDirectory = Directory.GetCurrentDirectory() + "\\EvilProject\\";
+            Process procCommand = Process.Start(psiOpt);
+            procCommand.WaitForExit();
         }
 
         private void BuildAndRunPrj_Click(object sender, EventArgs e)
@@ -60,7 +63,7 @@ namespace AngryCompiller
             if (exit_code == 0)
             {
                 StatusInfo.Text = "Builded successful!";
-                //RunPrj_Click(sender, e);
+                RunPrj_Click(sender, e);
             }
             else
                 StatusInfo.Text = "Build failed!";
@@ -1312,7 +1315,6 @@ namespace AngryCompiller
             uint ln = 0;
             int exit_code = 0;
             char[] smb = { ' ', ';' };
-            String name_file = "";
             #endregion
             log.AutoFlush = true;
             log.WriteLine("=====================Compile==============================");
@@ -1496,12 +1498,32 @@ namespace AngryCompiller
             #endregion
 
             vars = "";
-            log.WriteLine("============================================================");
             asm.Close();
             if (File.Exists(Directory.GetCurrentDirectory() + "\\EvilProject\\" + name_file))
                 File.Delete(Directory.GetCurrentDirectory() + "\\EvilProject\\" + name_file);
             File.Move(Directory.GetCurrentDirectory() + "\\EvilProject\\code.asm", Directory.GetCurrentDirectory() + "\\EvilProject\\" + name_file);
             fil.Close();
+
+            #region assembly
+            ProcessStartInfo psiOpt = new ProcessStartInfo(Directory.GetCurrentDirectory() + "\\EvilProject\\" + @"bldall", name_file.Substring(0, name_file.IndexOf(".")));
+            psiOpt.WorkingDirectory = Directory.GetCurrentDirectory() + "\\EvilProject\\";
+            Process procCommand = Process.Start(psiOpt);
+            procCommand.WaitForExit();
+
+            if (File.Exists(Directory.GetCurrentDirectory() + "\\EvilProject\\" + name_file.Substring(0, name_file.IndexOf(".")) + ".obj") == false)
+            {
+                log.WriteLine(name_file.Substring(0, name_file.IndexOf(".")) + ".obj" + " exists");
+                exit_code = -1;
+            }
+            if (File.Exists(Directory.GetCurrentDirectory() + "\\EvilProject\\" + name_file.Substring(0, name_file.IndexOf(".")) + ".exe") == false)
+            {
+                log.WriteLine(name_file.Substring(0, name_file.IndexOf(".")) + ".exe" + " exists");
+                exit_code = -1;
+            }
+            #endregion
+
+            log.WriteLine("============================================================");
+
             return exit_code;
         }
 
