@@ -41,42 +41,26 @@ namespace AngryCompiller
 
         private void BuildAndRunPrj_Click(object sender, EventArgs e)
         {
-            /*int exit_code = -1;
+            int exit_code = -1;
             SavePrj_Click(sender, e);
-            String code_str;
-            StreamReader fil = new StreamReader(fl);
-            
-            for(uint line = 1; fil.EndOfStream != true; ++line)
-            {
-                code_str = fil.ReadLine();
-                exit_code = SyntaxAnalyse(code_str, line);
-                if (exit_code > 0) break;
-            }
 
-            if (exit_code == 0)
-            for(uint line = 1; fil.EndOfStream != true; ++line)
-            {
-                code_str = fil.ReadLine();
-                exit_code = LogicAnalyse(code_str, line);
-                if (exit_code > 0) break;
-            }
+            exit_code = CodeAnalyse();
 
-            if (exit_code == 0)
-            for(uint line = 1; fil.EndOfStream != true; ++line)
-            {
-                code_str = fil.ReadLine();
-                exit_code = Compile(code_str, line);
-                if (exit_code > 0) break;
-            }
+            /*if (exit_code == 0)
+                exit_code = Compile();*/
+
+            LogList.Text = "";
+            StreamReader log = new StreamReader(Directory.GetCurrentDirectory() + "\\EvilProject\\log.txt");
+            LogList.Text = log.ReadToEnd();
+            log.Close();
 
             if (exit_code == 0)
             {
-                LogList.Text = "";
-                StreamReader log = new StreamReader(Directory.GetCurrentDirectory() + "\\EvilProject\\log.txt");
-                LogList.Text = log.ReadToEnd();
                 StatusInfo.Text = "Builded successful!";
-                RunPrj_Click(sender, e);
-            }*/
+                //RunPrj_Click(sender, e);
+            }
+            else
+                StatusInfo.Text = "Build failed!";
         }
 
         private void BuildPrj_Click(object sender, EventArgs e)
@@ -238,20 +222,28 @@ namespace AngryCompiller
         #region parce and compile
         private int CodeAnalyse()
         {
+            #region flags
             bool name = false;
             bool body = false;
             bool end = false;
             bool flg = false;
+            bool if_op = false;
+            bool else_op = false;
+            #endregion
+            #region vars
+            uint []blk_op = {0,0};
+            uint ln = 0;
             int exit_code = 0;
             char[] smb = { ' ', ';' };
             String vars = "";
+            #endregion
             StreamWriter log = new StreamWriter(Directory.GetCurrentDirectory() + "\\EvilProject\\log.txt");
             log.AutoFlush = true;
             log.WriteLine("=====================Code Analise=============================");
 
             String code_str;
             StreamReader fil = new StreamReader(fl);
-
+            #region parse
             for (uint line = 1; fil.EndOfStream != true; ++line)
             {
                 code_str = fil.ReadLine();
@@ -418,28 +410,147 @@ namespace AngryCompiller
                         }
                     }
                     #endregion
-                    /*#region if
-                    if (code_str.Contains("if"))
+                    #region if
+                    if (code_str.Contains("if(") || code_str.Contains("if ("))
                     {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
+                        if (code_str.StartsWith("if(") == false && code_str.StartsWith("if (") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" if \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.EndsWith(")") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" \")\" not found!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+                        ln = line;
+                        if_op = true;
                     }
                     #endregion
                     #region else
                     if (code_str.Contains("else"))
                     {
+                        if (code_str.StartsWith("else") == false || if_op == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" else \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.EndsWith("else") == false || if_op == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" else \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+                        ln = line;
+                        else_op = true;
+                    }
+                    #endregion
+                    #region {}
+                    if (code_str.Contains("{"))
+                    {
+                        if(code_str.Length > 1)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" { \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (blk_op[0] > 0 && blk_op[1] == 0)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line-2);
+                            log.WriteLine(" missing \" } \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+                        ++blk_op[0];
+                        blk_op[1] = 0;
+
+                        if (line - ln > 2)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" { \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.StartsWith("{") == false || (if_op == false && else_op == false))
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" { \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.EndsWith("{") == false || (if_op == false && else_op == false))
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" { \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+                    }
+
+                    if (code_str.Contains("}"))
+                    {
+                        if (code_str.Length > 1)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" } \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.StartsWith("}") == false || blk_op[0] < 1 || blk_op[0] > 1)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" } \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.EndsWith("}") == false || blk_op[0] < 1 || blk_op[0] > 1)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" missing \" } \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        --blk_op[0];
+                        blk_op[1] = 1;
+                    }
+
+                    /*if ((blk_op[0] > 0 && blk_op[1] == 0) && fil.EndOfStream)
+                    {
                         log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
+                        log.Write(ln+1);
+                        log.WriteLine(" missing \" { \" operator!");
                         if (exit_code != -1)
                             exit_code = -1;
-                    }
-                    #endregion*/
+                    }*/
+                    #endregion
                     #region ->
                     if (code_str.Contains("->"))
                     {
@@ -617,63 +728,120 @@ namespace AngryCompiller
                     #region add
                     if (code_str.Contains("add"))
                     {
-                        if (code_str.Substring(code_str.IndexOf("add") - 1, 5).StartsWith(" ") == false ||
-                            code_str.Substring(code_str.IndexOf("add") - 1, 5).EndsWith(" ") == false)
+                        if (code_str.StartsWith("integer") == false)
                         {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong \" add \" operator!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (code_str.EndsWith(";") == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" \";\" not found!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("add") + 4, code_str.IndexOf(";") - (code_str.IndexOf("add") + 4)), 0))
-                            flg = true;
-
-                        if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("add") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
-                        vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("add") - 1 - code_str.IndexOf("_", 3))) == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong variable!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (flg == false)
-                        {
-                            if (code_str.Substring(code_str.IndexOf("add") + 4).StartsWith("_") == false ||
-                            char.IsUpper(code_str.Substring(code_str.IndexOf("add") + 5), 0) == false ||
-                            vars.Contains(code_str.Substring(code_str.IndexOf("add") + 4, code_str.IndexOf(";", code_str.IndexOf("add") + 4) - (code_str.IndexOf("add") + 4))) == false)
+                            if (code_str.Substring(code_str.IndexOf("add") - 1, 5).StartsWith(" ") == false ||
+                                code_str.Substring(code_str.IndexOf("add") - 1, 5).EndsWith(" ") == false)
                             {
                                 log.Write("Error: line ");
                                 log.Write(line);
-                                log.WriteLine(" wrong value!");
+                                log.WriteLine(" wrong \" add \" operator!");
                                 if (exit_code != -1)
                                     exit_code = -1;
                             }
+
+                            if (code_str.EndsWith(";") == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" \";\" not found!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (char.IsDigit(code_str.Substring(code_str.IndexOf("add") + 4, code_str.IndexOf(";") - (code_str.IndexOf("add") + 4)), 0))
+                                flg = true;
+
+                            if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("add") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("add") - 1 - code_str.IndexOf("_", 3))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong variable!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (flg == false)
+                            {
+                                if (code_str.Substring(code_str.IndexOf("add") + 4).StartsWith("_") == false ||
+                                char.IsUpper(code_str.Substring(code_str.IndexOf("add") + 5), 0) == false ||
+                                vars.Contains(code_str.Substring(code_str.IndexOf("add") + 4, code_str.IndexOf(";", code_str.IndexOf("add") + 4) - (code_str.IndexOf("add") + 4))) == false)
+                                {
+                                    log.Write("Error: line ");
+                                    log.Write(line);
+                                    log.WriteLine(" wrong value!");
+                                    if (exit_code != -1)
+                                        exit_code = -1;
+                                }
+                            }
+                            flg = false;
                         }
-                        flg = false;
                     }
                     #endregion
                     #region sub
                     if (code_str.Contains("sub"))
                     {
-                        if (code_str.Substring(code_str.IndexOf("sub") - 1, 5).StartsWith(" ") == false ||
-                            code_str.Substring(code_str.IndexOf("sub") - 1, 5).EndsWith(" ") == false)
+                        if (code_str.StartsWith("integer") == false)
+                        {
+                            if (code_str.Substring(code_str.IndexOf("sub") - 1, 5).StartsWith(" ") == false ||
+                                code_str.Substring(code_str.IndexOf("sub") - 1, 5).EndsWith(" ") == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong \" sub \" operator!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (code_str.EndsWith(";") == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" \";\" not found!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (char.IsDigit(code_str.Substring(code_str.IndexOf("sub") + 4, code_str.IndexOf(";") - (code_str.IndexOf("sub") + 4)), 0))
+                                flg = true;
+
+                            if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("sub") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("sub") - 1 - code_str.IndexOf("_", 3))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong variable!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (flg == false)
+                            {
+                                if (code_str.Substring(code_str.IndexOf("sub") + 4).StartsWith("_") == false ||
+                                char.IsUpper(code_str.Substring(code_str.IndexOf("sub") + 5), 0) == false ||
+                                vars.Contains(code_str.Substring(code_str.IndexOf("sub") + 4, code_str.IndexOf(";", code_str.IndexOf("sub") + 4) - (code_str.IndexOf("sub") + 4))) == false)
+                                {
+                                    log.Write("Error: line ");
+                                    log.Write(line);
+                                    log.WriteLine(" wrong value!");
+                                    if (exit_code != -1)
+                                        exit_code = -1;
+                                }
+                            }
+                            flg = false;
+                        }
+                    }
+                    #endregion
+                    #region %
+                    if (code_str.Contains("%"))
+                    {
+                        if (code_str.Substring(code_str.IndexOf("%") - 1, 3).StartsWith(" ") == false ||
+                            code_str.Substring(code_str.IndexOf("%") - 1, 3).EndsWith(" ") == false)
                         {
                             log.Write("Error: line ");
                             log.Write(line);
-                            log.WriteLine(" wrong \" sub \" operator!");
+                            log.WriteLine(" wrong \" % \" operator!");
                             if (exit_code != -1)
                                 exit_code = -1;
                         }
@@ -687,11 +855,11 @@ namespace AngryCompiller
                                 exit_code = -1;
                         }
 
-                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("sub") + 4, code_str.IndexOf(";") - (code_str.IndexOf("sub") + 4)), 0))
+                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("%") + 2, code_str.IndexOf(";") - (code_str.IndexOf("%") + 2)), 0))
                             flg = true;
 
-                        if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("sub") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
-                        vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("sub") - 1 - code_str.IndexOf("_", 3))) == false)
+                        if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("%") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                        vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("%") - 1 - code_str.IndexOf("_", 3))) == false)
                         {
                             log.Write("Error: line ");
                             log.Write(line);
@@ -702,9 +870,9 @@ namespace AngryCompiller
 
                         if (flg == false)
                         {
-                            if (code_str.Substring(code_str.IndexOf("sub") + 4).StartsWith("_") == false ||
-                            char.IsUpper(code_str.Substring(code_str.IndexOf("sub") + 5), 0) == false ||
-                            vars.Contains(code_str.Substring(code_str.IndexOf("sub") + 4, code_str.IndexOf(";", code_str.IndexOf("sub") + 4) - (code_str.IndexOf("sub") + 4))) == false)
+                            if (code_str.Substring(code_str.IndexOf("%") + 2).StartsWith("_") == false ||
+                            char.IsUpper(code_str.Substring(code_str.IndexOf("%") + 3), 0) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("%") + 2, code_str.IndexOf(";", code_str.IndexOf("%") + 2) - (code_str.IndexOf("%") + 2))) == false)
                             {
                                 log.Write("Error: line ");
                                 log.Write(line);
@@ -716,94 +884,369 @@ namespace AngryCompiller
                         flg = false;
                     }
                     #endregion
-                    /*#region %
-                    if (code_str.Contains("%"))
-                    {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
-                    }
-                    #endregion
-                    #region ==
+                    #region == 
                     if (code_str.Contains("=="))
                     {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
+                        if (code_str.Contains("if(") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" == \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.Substring(code_str.IndexOf("==") - 1, 4).StartsWith(" ") == false ||
+                            code_str.Substring(code_str.IndexOf("==") - 1, 4).EndsWith(" ") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" == \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("==") + 3, code_str.IndexOf(")") - (code_str.IndexOf("==") + 3)), 0))
+                            flg = true;
+
+                        if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("==") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                        vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("==") - 1 - code_str.IndexOf("_", 3))) == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong variable!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (flg == false)
+                        {
+                            if (code_str.Substring(code_str.IndexOf("==") + 3).StartsWith("_") == false ||
+                            char.IsUpper(code_str.Substring(code_str.IndexOf("==") + 4), 0) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("==") + 3, code_str.IndexOf(")", code_str.IndexOf("==") + 3) - (code_str.IndexOf("==") + 3))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong value!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+                        }
+                        flg = false;
                     }
                     #endregion
                     #region !=
                     if (code_str.Contains("!="))
                     {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
+                        if (code_str.Contains("if(") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" != \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.Substring(code_str.IndexOf("!=") - 1, 4).StartsWith(" ") == false ||
+                            code_str.Substring(code_str.IndexOf("!=") - 1, 4).EndsWith(" ") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" != \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("!=") + 3, code_str.IndexOf(")") - (code_str.IndexOf("!=") + 3)), 0))
+                            flg = true;
+
+                        if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("!=") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                        vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("!=") - 1 - code_str.IndexOf("_", 3))) == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong variable!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (flg == false)
+                        {
+                            if (code_str.Substring(code_str.IndexOf("!=") + 3).StartsWith("_") == false ||
+                            char.IsUpper(code_str.Substring(code_str.IndexOf("!=") + 4), 0) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("!=") + 3, code_str.IndexOf(")", code_str.IndexOf("!=") + 3) - (code_str.IndexOf("!=") + 3))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong value!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+                        }
+                        flg = false;
                     }
                     #endregion
                     #region le
                     if (code_str.Contains("le"))
                     {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
+                        if (code_str.StartsWith("integer") == false)
+                        {
+                            if (code_str.Contains("if(") == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong \" le \" operator!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (code_str.Substring(code_str.IndexOf("le") - 1, 4).StartsWith(" ") == false ||
+                                code_str.Substring(code_str.IndexOf("le") - 1, 4).EndsWith(" ") == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong \" le \" operator!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (char.IsDigit(code_str.Substring(code_str.IndexOf("le") + 3, code_str.IndexOf(")") - (code_str.IndexOf("le") + 3)), 0))
+                                flg = true;
+
+                            if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("le") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("le") - 1 - code_str.IndexOf("_", 3))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong variable!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (flg == false)
+                            {
+                                if (code_str.Substring(code_str.IndexOf("le") + 3).StartsWith("_") == false ||
+                                char.IsUpper(code_str.Substring(code_str.IndexOf("le") + 4), 0) == false ||
+                                vars.Contains(code_str.Substring(code_str.IndexOf("le") + 3, code_str.IndexOf(")", code_str.IndexOf("le") + 3) - (code_str.IndexOf("le") + 3))) == false)
+                                {
+                                    log.Write("Error: line ");
+                                    log.Write(line);
+                                    log.WriteLine(" wrong value!");
+                                    if (exit_code != -1)
+                                        exit_code = -1;
+                                }
+                            }
+                            flg = false;
+                        }
                     }
                     #endregion
                     #region ge
                     if (code_str.Contains("ge"))
                     {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
+                        if (code_str.StartsWith("integer") == false)
+                        {
+                            if (code_str.Substring(code_str.IndexOf("ge") - 1, 4).StartsWith(" ") == false ||
+                                code_str.Substring(code_str.IndexOf("ge") - 1, 4).EndsWith(" ") == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong \" ge \" operator!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (code_str.Contains("if(") == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong \" ge \" operator!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (char.IsDigit(code_str.Substring(code_str.IndexOf("ge") + 3, code_str.IndexOf(")") - (code_str.IndexOf("ge") + 3)), 0))
+                                flg = true;
+
+                            if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("ge") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("ge") - 1 - code_str.IndexOf("_", 3))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong variable!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+
+                            if (flg == false)
+                            {
+                                if (code_str.Substring(code_str.IndexOf("ge") + 3).StartsWith("_") == false ||
+                                char.IsUpper(code_str.Substring(code_str.IndexOf("ge") + 4), 0) == false ||
+                                vars.Contains(code_str.Substring(code_str.IndexOf("ge") + 3, code_str.IndexOf(")", code_str.IndexOf("ge") + 3) - (code_str.IndexOf("ge") + 3))) == false)
+                                {
+                                    log.Write("Error: line ");
+                                    log.Write(line);
+                                    log.WriteLine(" wrong value!");
+                                    if (exit_code != -1)
+                                        exit_code = -1;
+                                }
+                            }
+                            flg = false;
+                        }
                     }
                     #endregion
                     #region &
                     if (code_str.Contains("&"))
                     {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
+                        if (code_str.Contains("if(") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" & \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.Substring(code_str.IndexOf("&") - 1, 3).StartsWith(" ") == false ||
+                            code_str.Substring(code_str.IndexOf("&") - 1, 3).EndsWith(" ") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" & \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("&") + 2, code_str.IndexOf(")") - (code_str.IndexOf("&") + 2)), 0))
+                            flg = true;
+
+                        if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("&") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                        vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("&") - 1 - code_str.IndexOf("_", 3))) == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong variable!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (flg == false)
+                        {
+                            if (code_str.Substring(code_str.IndexOf("&") + 2).StartsWith("_") == false ||
+                            char.IsUpper(code_str.Substring(code_str.IndexOf("&") + 3), 0) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("&") + 2, code_str.IndexOf(")", code_str.IndexOf("&") + 2) - (code_str.IndexOf("&") + 2))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong value!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+                        }
+                        flg = false;
                     }
                     #endregion
                     #region |
                     if (code_str.Contains("|"))
                     {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
+                        if (code_str.Contains("if(") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" | \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.Substring(code_str.IndexOf("|") - 1, 3).StartsWith(" ") == false ||
+                            code_str.Substring(code_str.IndexOf("|") - 1, 3).EndsWith(" ") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" | \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("|") + 2, code_str.IndexOf(")") - (code_str.IndexOf("|") + 2)), 0))
+                            flg = true;
+
+                        if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("|") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                        vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("|") - 1 - code_str.IndexOf("_", 3))) == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong variable!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (flg == false)
+                        {
+                            if (code_str.Substring(code_str.IndexOf("|") + 2).StartsWith("_") == false ||
+                            char.IsUpper(code_str.Substring(code_str.IndexOf("|") + 3), 0) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("|") + 2, code_str.IndexOf(")", code_str.IndexOf("|") + 2) - (code_str.IndexOf("|") + 2))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong value!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+                        }
+                        flg = false;
                     }
                     #endregion
                     #region !
                     if (code_str.Contains("!"))
                     {
-                        log.Write("Error: line ");
-                        log.Write(line);
-                        log.WriteLine(" no directive body!");
-                        body = true;
-                        if (exit_code != -1)
-                            exit_code = -1;
+                        if (code_str.Contains("if(") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" ! \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (code_str.Substring(code_str.IndexOf("!") - 1, 3).StartsWith(" ") == false ||
+                            code_str.Substring(code_str.IndexOf("!") - 1, 3).EndsWith(" ") == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong \" ! \" operator!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("!") + 2, code_str.IndexOf(")") - (code_str.IndexOf("!") + 2)), 0))
+                            flg = true;
+
+                        if (char.IsUpper(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("!") - 1 - code_str.IndexOf("_", 3)), 1) == false ||
+                        vars.Contains(code_str.Substring(code_str.IndexOf("_", 3), code_str.IndexOf("!") - 1 - code_str.IndexOf("_", 3))) == false)
+                        {
+                            log.Write("Error: line ");
+                            log.Write(line);
+                            log.WriteLine(" wrong variable!");
+                            if (exit_code != -1)
+                                exit_code = -1;
+                        }
+
+                        if (flg == false)
+                        {
+                            if (code_str.Substring(code_str.IndexOf("!") + 2).StartsWith("_") == false ||
+                            char.IsUpper(code_str.Substring(code_str.IndexOf("!") + 3), 0) == false ||
+                            vars.Contains(code_str.Substring(code_str.IndexOf("!") + 2, code_str.IndexOf(")", code_str.IndexOf("!") + 2) - (code_str.IndexOf("!") + 2))) == false)
+                            {
+                                log.Write("Error: line ");
+                                log.Write(line);
+                                log.WriteLine(" wrong value!");
+                                if (exit_code != -1)
+                                    exit_code = -1;
+                            }
+                        }
+                        flg = false;
                     }
-                    #endregion*/
+                    #endregion
                 }
                 #endregion
                 #region end
@@ -826,8 +1269,19 @@ namespace AngryCompiller
                     }
                 }
                 #endregion
-
             }
+            #region {} (last)
+            if ((blk_op[0] > 0 && blk_op[1] == 0) && fil.EndOfStream)
+            {
+                log.Write("Error: line ");
+                log.Write(ln + 1);
+                log.WriteLine(" missing \" { \" operator!");
+                if (exit_code != -1)
+                    exit_code = -1;
+            }
+            #endregion
+            #endregion
+
             log.WriteLine("============================================================");
             log.Close();
             fil.Close();
