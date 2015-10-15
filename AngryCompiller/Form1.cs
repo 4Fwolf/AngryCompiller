@@ -1203,7 +1203,7 @@ namespace AngryCompiller
                     }
                     #endregion
                     #region !
-                    if (code_str.Contains("!"))
+                    if (code_str.Contains("!") && !code_str.Contains("!="))
                     {
                         if (code_str.Contains("if(") == false)
                         {
@@ -1399,7 +1399,7 @@ namespace AngryCompiller
                         else
                         {
                             String reg = "";
-                            reg = operators(code_str.Substring(code_str.IndexOf("-> ") + 3, code_str.IndexOf(";") - (code_str.IndexOf("-> "))), regs);
+                            reg = operators(code_str.Substring(code_str.IndexOf("-> ") + 3, code_str.IndexOf(";") - (code_str.IndexOf("-> ") + 3)), regs);
                             asm.WriteLine("mov " + code_str.Substring(0, code_str.IndexOf(" ->")) + "," + reg);
                         }
                     }
@@ -1426,7 +1426,7 @@ namespace AngryCompiller
                             asm.WriteLine("mov eax," + code_str.Substring(code_str.IndexOf("_"), code_str.IndexOf(" ") - code_str.IndexOf("_")));
                             nw_cd = nw_cd.Insert(nw_cd.Length, code_str.Substring(0, code_str.IndexOf("(")) + " ");
                             nw_cd = nw_cd.Insert(nw_cd.Length, " eax ");
-                            nw_cd = nw_cd.Insert(nw_cd.Length, code_str.Substring(code_str.IndexOf(" ", code_str.IndexOf("_")) + 1, code_str.IndexOf(")") - (code_str.IndexOf(" ", code_str.IndexOf("_")) + 1)));
+                            nw_cd = nw_cd.Insert(nw_cd.Length, operators(code_str.Substring(code_str.IndexOf(" ", code_str.IndexOf("_")) + 1, code_str.IndexOf(")") - (code_str.IndexOf(" ", code_str.IndexOf("_")) + 1)), regs));
                             asm.WriteLine(nw_cd);
                         }
 
@@ -1436,7 +1436,7 @@ namespace AngryCompiller
                             asm.WriteLine("mov ebx," + code_str.Substring(code_str.IndexOf("_"), code_str.IndexOf(" ") - code_str.IndexOf("_")));
                             nw_cd = nw_cd.Insert(nw_cd.Length, code_str.Substring(0, code_str.IndexOf("(")));
                             nw_cd = nw_cd.Insert(nw_cd.Length, " ebx ");
-                            nw_cd = nw_cd.Insert(nw_cd.Length, code_str.Substring(code_str.IndexOf(" ", code_str.IndexOf("_")) + 1, code_str.IndexOf(")") - (code_str.IndexOf(" ", code_str.IndexOf("_")) + 1)));
+                            nw_cd = nw_cd.Insert(nw_cd.Length, operators(code_str.Substring(code_str.IndexOf(" ", code_str.IndexOf("_")) + 1, code_str.IndexOf(")") - (code_str.IndexOf(" ", code_str.IndexOf("_")) + 1)), regs));
                             asm.WriteLine(nw_cd);
                         }
 
@@ -1446,7 +1446,7 @@ namespace AngryCompiller
                             asm.WriteLine("mov ecx," + code_str.Substring(code_str.IndexOf("_"), code_str.IndexOf(" ") - code_str.IndexOf("_")));
                             nw_cd = nw_cd.Insert(nw_cd.Length, code_str.Substring(0, code_str.IndexOf("(")));
                             nw_cd = nw_cd.Insert(nw_cd.Length, " ecx ");
-                            nw_cd = nw_cd.Insert(nw_cd.Length, code_str.Substring(code_str.IndexOf(" ", code_str.IndexOf("_")) + 1, code_str.IndexOf(")") - (code_str.IndexOf(" ", code_str.IndexOf("_")) + 1)));
+                            nw_cd = nw_cd.Insert(nw_cd.Length, operators(code_str.Substring(code_str.IndexOf(" ", code_str.IndexOf("_")) + 1, code_str.IndexOf(")") - (code_str.IndexOf(" ", code_str.IndexOf("_")) + 1)), regs));
                             asm.WriteLine(nw_cd);
                         }
 
@@ -1456,7 +1456,7 @@ namespace AngryCompiller
                             asm.WriteLine("mov edx," + code_str.Substring(code_str.IndexOf("_"), code_str.IndexOf(" ") - code_str.IndexOf("_")));
                             nw_cd = nw_cd.Insert(nw_cd.Length, code_str.Substring(0, code_str.IndexOf("(")));
                             nw_cd = nw_cd.Insert(nw_cd.Length, " edx ");
-                            nw_cd = nw_cd.Insert(nw_cd.Length, code_str.Substring(code_str.IndexOf(" ", code_str.IndexOf("_")) + 1, code_str.IndexOf(")") - (code_str.IndexOf(" ", code_str.IndexOf("_")) + 1)));
+                            nw_cd = nw_cd.Insert(nw_cd.Length, operators(code_str.Substring(code_str.IndexOf(" ", code_str.IndexOf("_")) + 1, code_str.IndexOf(")") - (code_str.IndexOf(" ", code_str.IndexOf("_")) + 1)), regs));
                             asm.WriteLine(nw_cd);
                         }
                         if_op = true;
@@ -1469,6 +1469,15 @@ namespace AngryCompiller
                         nw_cd = nw_cd.Insert(nw_cd.Length, code_str);
                         asm.WriteLine(nw_cd);
                         else_op = true;
+                    }
+                    #endregion
+                    #region {}
+                    if(code_str.Contains("}"))
+                    {
+                        if (File.ReadAllText(fl).Contains("else") && else_op == false)
+                            continue;
+                        else
+                            asm.WriteLine(".endif");
                     }
                     #endregion
                 }
@@ -1531,26 +1540,29 @@ namespace AngryCompiller
             #region ==
             if (str.Contains("=="))
             {
-                reg = str.Substring(str.IndexOf("=="));
+                reg = str;
                 return reg;
             }
             #endregion
             #region !=
             if (str.Contains("!="))
             {
-                
+                reg = str;
+                return reg;
             }
             #endregion
             #region le
             if (str.Contains("le"))
             {
-               
+                reg = "<" + str.Substring(str.IndexOf(" "));
+                return reg;
             }
             #endregion
             #region ge
             if (str.Contains("ge"))
             {
-                
+                reg = ">" + str.Substring(str.IndexOf(" "));
+                return reg; 
             }
             #endregion
             #region &

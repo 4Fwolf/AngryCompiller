@@ -29,8 +29,10 @@ mov _Dig1,_Dig
 invoke  crt_scanf,ADDR format1,ADDR _Dig
 invoke  crt_scanf,ADDR format1,ADDR _Dig1
 mov eax,_Dig
-.if eax == _Dig
-.else
+.if  eax == _Dig1
+mov _Dig1,
 .endif
 invoke  crt_printf,ADDR format1,_Dig
 invoke  crt_printf,ADDR format1,_Dig1
+invoke  ExitProcess,0
+END start
