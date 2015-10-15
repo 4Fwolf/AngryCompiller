@@ -1360,9 +1360,10 @@ namespace AngryCompiller
                     asm.WriteLine("");
                     asm.WriteLine(".data");
                     asm.WriteLine("tmp dd 0");
-                    asm.WriteLine("tmp dd 0");
-                    asm.WriteLine("tmp dd 0");
-                    asm.WriteLine("tmp dd 0");
+                    for (uint i = (uint)vars.IndexOf("_"); i <= vars.LastIndexOf("_"); i = (uint)vars.IndexOf("_", (int)i+1))
+                    {
+                        asm.WriteLine(vars.Substring((int)i, vars.IndexOf(" ", (int)i) - (int)i) + " dd 0");
+                    }
                     asm.WriteLine("");
                     asm.WriteLine(".code");
                     asm.WriteLine("start:");
@@ -2350,6 +2351,7 @@ namespace AngryCompiller
             #endregion
             #endregion
 
+            vars = "";
             log.WriteLine("============================================================");
             asm.Close();
             if (File.Exists(Directory.GetCurrentDirectory() + "\\EvilProject\\" + name_file))
