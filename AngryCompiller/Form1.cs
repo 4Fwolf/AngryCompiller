@@ -1343,22 +1343,27 @@ namespace AngryCompiller
                 #region body
                 if (body == false)
                 {
-                    asm.WriteLine(".586");
+                    asm.WriteLine(".686");
                     asm.WriteLine(".model flat, stdcall ");
                     asm.WriteLine("option casemap: none");
                     asm.WriteLine("");
                     asm.WriteLine("include \\masm32\\include\\windows.inc");
+                    asm.WriteLine("include \\masm32\\macros\\macros.asm");
                     asm.WriteLine("include \\masm32\\include\\kernel32.inc ");
                     asm.WriteLine("include \\masm32\\include\\masm32.inc ");
-                    asm.WriteLine("include \\masm32\\include\\debug.inc");
                     asm.WriteLine("include \\masm32\\include\\user32.inc ");
+                    asm.WriteLine("include \\masm32\\include\\gdi32.inc ");
+                    asm.WriteLine("include \\masm32\\include\\msvcrt.inc");
                     asm.WriteLine("");
                     asm.WriteLine("includelib \\masm32\\lib\\kernel32.lib ");
                     asm.WriteLine("includelib \\masm32\\lib\\masm32.lib ");
-                    asm.WriteLine("includelib \\masm32\\lib\\debug.lib");
+                    asm.WriteLine("includelib \\masm32\\lib\\gdi32.lib ");
                     asm.WriteLine("includelib \\masm32\\lib\\user32.lib");
+                    asm.WriteLine("includelib \\masm32\\lib\\msvcrt.lib");
                     asm.WriteLine("");
                     asm.WriteLine(".data");
+                    asm.WriteLine("format1 db \"%d\",10,13");
+
                     asm.WriteLine("tmp dd 0");
                     for (uint i = (uint)vars.IndexOf("_"); i <= vars.LastIndexOf("_"); i = (uint)vars.IndexOf("_", (int)i+1))
                     {
@@ -1374,109 +1379,33 @@ namespace AngryCompiller
                 #region code
                 if (name == true && body == true && fil.EndOfStream != true)
                 {
-                    #region integer
-                    if (code_str.Contains("integer"))
+                    #region ->
+                    if (code_str.Contains("->"))
                     {
-                        if (code_str.StartsWith("integer ") == false)
+                        if(code_str.StartsWith("integer "))
                         {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong directive integer!");
-                            if (exit_code != -1)
-                                exit_code = -1;
+                            asm.Write("mov ");
+                            asm.Write(code_str.Substring(code_str.IndexOf("_"), code_str.IndexOf(" ", code_str.IndexOf("_")) - code_str.IndexOf("_")));
+                            if (char.IsDigit(code_str.Substring(code_str.IndexOf("->") + 3, code_str.IndexOf(";") - (code_str.IndexOf("->") + 3)), 0))
+                            {
+                                int.Parse(code_str.Substring(code_str.IndexOf("->") + 3, code_str.IndexOf(";") - (code_str.IndexOf("->") + 3)));
+                                asm.WriteLine("," + code_str.Substring(code_str.IndexOf("->") + 3, code_str.IndexOf(";") - (code_str.IndexOf("->") + 3)));
+                            }
+                            else
+                                asm.WriteLine("," + code_str.Substring(code_str.IndexOf("->") + 3, code_str.IndexOf(";") - (code_str.IndexOf("->") + 3)));
                         }
-                        else flg = true;
-
-                        if (code_str.EndsWith(";") == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" \";\" not found!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (code_str.Substring(8).StartsWith("_") == false ||
-                            char.IsUpper(code_str.Substring(9, 1), 0) == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong variable name!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-                        else if (flg == true)
-                        {
-                            vars = vars.Insert(vars.Length, code_str.Substring(8, code_str.IndexOfAny(smb, 8) - 8));
-                            vars = vars.Insert(vars.Length, " ");
-                        }
-                        flg = false;
                     }
                     #endregion
                     #region read
                     if (code_str.Contains("read"))
                     {
-                        if (code_str.StartsWith("read ") == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong directive read!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (code_str.EndsWith(";") == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" \";\" not found!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (code_str.Substring(5).StartsWith("_") == false ||
-                            char.IsUpper(code_str.Substring(6, 1), 0) == false ||
-                            vars.Contains(code_str.Substring(5, code_str.IndexOf(";") - 5)) == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong variable!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
+                        asm.WriteLine("invoke  crt_scanf,ADDR format1,ADDR " + code_str.Substring(code_str.IndexOf("_"), code_str.IndexOf(";") - code_str.IndexOf("_")));
                     }
                     #endregion
                     #region write
                     if (code_str.Contains("write"))
                     {
-                        if (code_str.StartsWith("write ") == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong directive write!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (code_str.EndsWith(";") == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" \";\" not found!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (code_str.Substring(6).StartsWith("_") == false ||
-                            char.IsUpper(code_str.Substring(7, 1), 0) == false ||
-                            vars.Contains(code_str.Substring(6, code_str.IndexOf(";") - 6)) == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong variable!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
+                        asm.WriteLine("invoke  crt_printf,ADDR format1," + code_str.Substring(code_str.IndexOf("_"), code_str.IndexOf(";") - code_str.IndexOf("_")));
                     }
                     #endregion
                     #region if
@@ -1619,78 +1548,6 @@ namespace AngryCompiller
                         if (exit_code != -1)
                             exit_code = -1;
                     }*/
-                    #endregion
-                    #region ->
-                    if (code_str.Contains("->"))
-                    {
-                        if (code_str.Substring(code_str.IndexOf("->") - 1, 4).StartsWith(" ") == false ||
-                            code_str.Substring(code_str.IndexOf("->") - 1, 4).EndsWith(" ") == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" wrong \" -> \" operator!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (code_str.EndsWith(";") == false)
-                        {
-                            log.Write("Error: line ");
-                            log.Write(line);
-                            log.WriteLine(" \";\" not found!");
-                            if (exit_code != -1)
-                                exit_code = -1;
-                        }
-
-                        if (char.IsDigit(code_str.Substring(code_str.IndexOf("->") + 3, code_str.IndexOf(";") - (code_str.IndexOf("->") + 3)), 0))
-                            flg = true;
-
-                        if (code_str.Contains("integer") == false)
-                        {
-                            if (code_str.StartsWith("_") == false ||
-                            char.IsUpper(code_str.Substring(1, 1), 0) == false ||
-                            vars.Contains(code_str.Substring(0, code_str.IndexOf("->") - 1)) == false)
-                            {
-                                log.Write("Error: line ");
-                                log.Write(line);
-                                log.WriteLine(" wrong variable!");
-                                if (exit_code != -1)
-                                    exit_code = -1;
-                            }
-                        }
-
-                        if (flg == false)
-                        {
-                            if (code_str.Contains("integer") == true)
-                            {
-                                if (code_str.Substring(code_str.IndexOf("->") + 3).StartsWith("_") == false ||
-                                char.IsUpper(code_str.Substring(code_str.IndexOf("->") + 4), 0) == false ||
-                                code_str.Substring(code_str.IndexOf("->") + 3, code_str.IndexOf(";") - (code_str.IndexOf("->") + 3)) == code_str.Substring(code_str.IndexOf("_"), code_str.IndexOf("->") - 1 - code_str.IndexOf("_")) ||
-                                vars.Contains(code_str.Substring(code_str.IndexOf("->") + 3, code_str.IndexOfAny(smb, code_str.IndexOf("->") + 3) - (code_str.IndexOf("->") + 3))) == false)
-                                {
-                                    log.Write("Error: line ");
-                                    log.Write(line);
-                                    log.WriteLine(" wrong value!");
-                                    if (exit_code != -1)
-                                        exit_code = -1;
-                                }
-                            }
-                            else
-                            {
-                                if (code_str.Substring(code_str.IndexOf("->") + 3).StartsWith("_") == false ||
-                                char.IsUpper(code_str.Substring(code_str.IndexOf("->") + 4), 0) == false ||
-                                vars.Contains(code_str.Substring(code_str.IndexOf("->") + 3, code_str.IndexOfAny(smb, code_str.IndexOf("->") + 3) - (code_str.IndexOf("->") + 3))) == false)
-                                {
-                                    log.Write("Error: line ");
-                                    log.Write(line);
-                                    log.WriteLine(" wrong value!");
-                                    if (exit_code != -1)
-                                        exit_code = -1;
-                                }
-                            }
-                        }
-                        flg = false;
-                    }
                     #endregion
                     #region *
                     if (code_str.Contains("*"))

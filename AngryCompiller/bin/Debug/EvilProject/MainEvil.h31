@@ -1,8 +1,8 @@
 name <TestProgram>;
 body data
 
-integer _Dig;
-integer _Dig1;
+integer _Dig -> 10;
+integer _Dig1 -> _Dig;
 
 read _Dig;
 read _Dig1;
