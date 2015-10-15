@@ -24,13 +24,19 @@ _Dig1 dd 0
 
 .code
 start:
-mov _Dig,10
-mov _Dig1,_Dig
 invoke  crt_scanf,ADDR format1,ADDR _Dig
 invoke  crt_scanf,ADDR format1,ADDR _Dig1
 mov eax,_Dig
 .if  eax == _Dig1
-mov _Dig1,
+mov edx,1
+mov eax,_Dig
+add eax,edx
+mov _Dig1,eax
+.else
+mov edx,1
+mov eax,_Dig
+add eax,edx
+mov _Dig1,eax
 .endif
 invoke  crt_printf,ADDR format1,_Dig
 invoke  crt_printf,ADDR format1,_Dig1

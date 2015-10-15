@@ -1294,6 +1294,7 @@ namespace AngryCompiller
             return exit_code;
         }
 
+        StreamWriter asm;
         private int Compile()
         {
             #region flags
@@ -1321,7 +1322,7 @@ namespace AngryCompiller
 
             String code_str;
             StreamReader fil = new StreamReader(fl);
-            StreamWriter asm = new StreamWriter(Directory.GetCurrentDirectory() + "\\EvilProject\\code.asm");
+            asm = new StreamWriter(Directory.GetCurrentDirectory() + "\\EvilProject\\code.asm");
             asm.AutoFlush = true;
             #region parse
             for (uint line = 1; fil.EndOfStream != true; ++line)
@@ -1510,31 +1511,75 @@ namespace AngryCompiller
             #region *
             if (str.Contains("*"))
             {
-                
+                if (char.IsDigit(str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1), 0))
+                {
+                    asm.WriteLine("mov edx," + str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1));
+                    asm.WriteLine("mov eax," + str.Substring(0, str.IndexOf(" ")));
+                    asm.WriteLine("imul edx");
+                }
+                else
+                {
+                    asm.WriteLine("mov eax," + str.Substring(0, str.IndexOf(" ")));
+                    asm.WriteLine("imul " + str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1));
+                }
+
+                reg = "eax";
             }
             #endregion
             #region /
             if (str.Contains("/"))
             {
-                
+                if (char.IsDigit(str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1), 0))
+                {
+                    asm.WriteLine("mov edx," + str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1));
+                    asm.WriteLine("mov eax," + str.Substring(0, str.IndexOf(" ")));
+                    asm.WriteLine("idiv edx");
+                }
+                else
+                {
+                    asm.WriteLine("mov eax," + str.Substring(0, str.IndexOf(" ")));
+                    asm.WriteLine("idiv " + str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1));
+                }
+
+                reg = "eax";
             }
             #endregion
             #region add
             if (str.Contains("add"))
             {
-               
+                asm.WriteLine("mov edx," + str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1));
+                asm.WriteLine("mov eax," + str.Substring(0, str.IndexOf(" ")));
+                asm.WriteLine("add eax,edx");
+
+                reg = "eax";
             }
             #endregion
             #region sub
             if (str.Contains("sub"))
             {
-                
+                asm.WriteLine("mov edx," + str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1));
+                asm.WriteLine("mov eax," + str.Substring(0, str.IndexOf(" ")));
+                asm.WriteLine("add eax,edx");
+
+                reg = "eax";
             }
             #endregion
             #region %
             if (str.Contains("%"))
             {
-                
+                if (char.IsDigit(str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1), 0))
+                {
+                    asm.WriteLine("mov edx," + str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1));
+                    asm.WriteLine("mov eax," + str.Substring(0, str.IndexOf(" ")));
+                    asm.WriteLine("idiv edx");
+                }
+                else
+                {
+                    asm.WriteLine("mov eax," + str.Substring(0, str.IndexOf(" ")));
+                    asm.WriteLine("idiv " + str.Substring(str.IndexOf(" ", str.IndexOf(" ") + 1) + 1));
+                }
+
+                reg = "edx";
             }
             #endregion
             #region ==
@@ -1568,19 +1613,19 @@ namespace AngryCompiller
             #region &
             if (str.Contains("&"))
             {
-                
+                reg = str;
             }
             #endregion
             #region |
             if (str.Contains("|"))
             {
-                
+                reg = str;
             }
             #endregion
             #region !
             if (str.Contains("!"))
             {
-                
+                reg = str;
             }
             #endregion
             
