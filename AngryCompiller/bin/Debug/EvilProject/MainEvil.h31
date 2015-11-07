@@ -1,33 +1,27 @@
 name <TestProgram>;
 body data
 
+\\ vars
 integer _Dig;
 integer _Dig1;
 
+\\ read values
 read _Dig;
 read _Dig1;
 
-if(_Dig == _Dig1)
+if(_Dig ge _Dig1)
 {
-_Dig1 -> _Dig add 1;
+_Dig -> 10 add 10;
 }
 else
 {
-_Dig1 -> _Dig sub 1;
+_Dig1 -> _Dig sub 10;
 }
 
+\\ print values
 write _Dig;
 write _Dig1;
 
-\\ *
-\\ /
-\\ %
-\\ !=
-\\ le
-\\ ge
-\\ !
-\\ &
-\\ |
-\\ comment
+read _Dig;
 
 end

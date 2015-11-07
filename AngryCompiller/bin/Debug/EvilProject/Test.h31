@@ -1,0 +1,13 @@
+name <TestProgram>;
+body data
+
+integer _Dig -> 10;
+integer _Dig1 -> 5;
+
+\\ 100+2-6 = 96
+_Dig -> 10 * 10 add 2 sub 3 / 2;
+
+write _Dig;
+read _Dig1;
+
+end

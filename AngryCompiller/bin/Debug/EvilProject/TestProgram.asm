@@ -27,18 +27,21 @@ start:
 invoke  crt_scanf,ADDR format1,ADDR _Dig
 invoke  crt_scanf,ADDR format1,ADDR _Dig1
 mov eax,_Dig
-.if  eax == _Dig1
-mov edx,1
-mov eax,_Dig
-add eax,edx
-mov _Dig1,eax
+.if  eax > _Dig1
+mov eax,10
+mov ebx,10
+add eax,ebx
+mov ebx,eax
+mov _Dig,ebx
 .else
-mov edx,1
 mov eax,_Dig
-add eax,edx
-mov _Dig1,eax
+mov ecx,10
+sub eax,ecx
+mov ecx,eax
+mov _Dig1,ecx
 .endif
 invoke  crt_printf,ADDR format1,_Dig
 invoke  crt_printf,ADDR format1,_Dig1
+invoke  crt_scanf,ADDR format1,ADDR _Dig
 invoke  ExitProcess,0
 END start
